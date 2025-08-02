@@ -2,129 +2,35 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Пантеон науки</title>
+  <title>Тест сцены</title>
   <style>
-    body { margin: 0; background: #000; color: white; font-family: Arial, sans-serif; }
-    #header { text-align: center; padding: 20px; font-size: 28px; font-weight: bold; color: #00aaff; }
-    #footer { text-align: center; padding: 10px; font-size: 18px; position: fixed; bottom: 0; width: 100%; color: #00ffaa; }
+    body { margin: 0; }
     canvas { display: block; }
-    .label {
-      position: absolute;
-      color: #fff;
-      background: rgba(0,0,0,0.6);
-      padding: 5px 10px;
-      border-radius: 5px;
-      pointer-events: none;
-      display: none;
-    }
-    .label img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      vertical-align: middle;
-      margin-right: 8px;
-    }
   </style>
 </head>
 <body>
-  <div id="header">Пантеон науки</div>
-  <div id="container"></div>
-  <div id="footer">Физика | Астрономия | Биология | Химия | Технологии | Философия</div>
-  <div id="label" class="label"></div>
-
-  <!-- Подключаем three.js -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/examples/js/controls/OrbitControls.js"></script>
-
   <script>
-    const container = document.getElementById('container');
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
-    container.appendChild(renderer.domElement);
+    document.body.appendChild(renderer.domElement);
 
-    // Свет
-    const ambient = new THREE.AmbientLight(0x404040, 2);
-    scene.add(ambient);
-    const pointLight = new THREE.PointLight(0x00aaff, 2, 100);
-    pointLight.position.set(10, 10, 10);
-    scene.add(pointLight);
+    const geometry = new THREE.BoxGeometry();
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    const cube = new THREE.Mesh(geometry, material);
+    scene.add(cube);
 
-    // Мозг — шар из точек (нейронов)
-    const neurons = [];
-    const neuronGeometry = new THREE.SphereGeometry(0.1, 16, 16);
-    const neuronMaterial = new THREE.MeshPhongMaterial({ color: 0x00aaff, emissive: 0x0077ff });
-    for (let i = 0; i < 200; i++) {
-      const neuron = new THREE.Mesh(neuronGeometry, neuronMaterial);
-      const phi = Math.acos(2 * Math.random() - 1);
-      const theta = 2 * Math.PI * Math.random();
-      const r = 3;
-      neuron.position.set(
-        r * Math.sin(phi) * Math.cos(theta),
-        r * Math.sin(phi) * Math.sin(theta),
-        r * Math.cos(phi)
-      );
-      scene.add(neuron);
-      neurons.push(neuron);
-    }
+    camera.position.z = 5;
 
-    // Учёные
-    const scientists = [
-      { name: "Альберт Эйнштейн", img: "https://upload.wikimedia.org/wikipedia/commons/d/d3/Albert_Einstein_Head.jpg" },
-      { name: "Исаак Ньютон", img: "https://upload.wikimedia.org/wikipedia/commons/3/39/Sir_Isaac_Newton_%281642-1727%29.jpg" },
-      { name: "Мария Кюри", img: "https://upload.wikimedia.org/wikipedia/commons/7/7e/Marie_Curie_c1920.jpg" },
-      { name: "Галилео Галилей", img: "https://upload.wikimedia.org/wikipedia/commons/5/5e/Galileo.arp.300pix.jpg" }
-    ];
-
-    // Привязываем учёных к случайным нейронам
-    const scientistMap = new Map();
-    for (let i = 0; i < scientists.length; i++) {
-      scientistMap.set(neurons[i], scientists[i]);
-    }
-
-    // Управление камерой
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    camera.position.z = 6;
-
-    // Подсказка
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
-    const label = document.getElementById('label');
-
-    function onMouseMove(event) {
-      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-      raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObjects(neurons);
-      if (intersects.length > 0) {
-        const obj = intersects[0].object;
-        if (scientistMap.has(obj)) {
-          const sc = scientistMap.get(obj);
-          label.innerHTML = `<img src="${sc.img}"> ${sc.name}`;
-          label.style.left = event.clientX + 10 + "px";
-          label.style.top = event.clientY + 10 + "px";
-          label.style.display = "block";
-        }
-      } else {
-        label.style.display = "none";
-      }
-    }
-    window.addEventListener('mousemove', onMouseMove);
-
-    // Анимация
     function animate() {
       requestAnimationFrame(animate);
-      scene.rotation.y += 0.001;
+      cube.rotation.x += 0.01;
+      cube.rotation.y += 0.01;
       renderer.render(scene, camera);
     }
     animate();
-
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
   </script>
 </body>
 </html>

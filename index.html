@@ -2,35 +2,73 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Тест сцены</title>
+  <title>Пантеон науки</title>
   <style>
-    body { margin: 0; }
+    body { margin: 0; background: black; overflow: hidden; }
     canvas { display: block; }
+    #title {
+      position: absolute;
+      top: 10px;
+      width: 100%;
+      text-align: center;
+      font-size: 32px;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    #disciplines {
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      font-size: 18px;
+      color: #00ffff;
+      font-family: Arial, sans-serif;
+    }
   </style>
 </head>
 <body>
+  <div id="title">Пантеон науки</div>
+  <div id="disciplines">Физика | Астрономия | Биология | Химия | Технологии | Медицина | Философия | История</div>
+
   <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/build/three.min.js"></script>
   <script>
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer();
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    const geometry = new THREE.BoxGeometry();
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
-    const cube = new THREE.Mesh(geometry, material);
-    scene.add(cube);
+    // Сфера с точками (нейроны)
+    const geometry = new THREE.SphereGeometry(3, 64, 64);
+    const material = new THREE.PointsMaterial({ 
+      color: 0x00aaff, 
+      size: 0.05, 
+      transparent: true,
+      opacity: 0.9 
+    });
+    const points = new THREE.Points(geometry, material);
+    scene.add(points);
 
-    camera.position.z = 5;
+    // Немного света
+    const light = new THREE.PointLight(0x00aaff, 2, 100);
+    light.position.set(5, 5, 5);
+    scene.add(light);
+
+    camera.position.z = 8;
 
     function animate() {
       requestAnimationFrame(animate);
-      cube.rotation.x += 0.01;
-      cube.rotation.y += 0.01;
+      points.rotation.y += 0.002; // медленное вращение
       renderer.render(scene, camera);
     }
     animate();
+
+    // Масштаб при изменении окна
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
   </script>
 </body>
 </html>

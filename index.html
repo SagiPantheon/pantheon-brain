@@ -10,7 +10,6 @@
 </head>
 <body>
   <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/controls/OrbitControls.min.js"></script>
   <script>
     // Сцена
     const scene = new THREE.Scene();
@@ -30,29 +29,19 @@
     light.position.set(5, 5, 5);
     scene.add(light);
 
-    // "Мозг" (шар)
+    // Шар
     const geometry = new THREE.SphereGeometry(1, 64, 64);
     const material = new THREE.MeshPhongMaterial({ color: 0x82b2ee, wireframe: true });
-    const brain = new THREE.Mesh(geometry, material);
-    scene.add(brain);
-
-    // Контролы
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    const sphere = new THREE.Mesh(geometry, material);
+    scene.add(sphere);
 
     // Анимация
     function animate() {
       requestAnimationFrame(animate);
-      brain.rotation.y += 0.005;
+      sphere.rotation.y += 0.01;
       renderer.render(scene, camera);
     }
     animate();
-
-    // Подгон размера
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
   </script>
 </body>
 </html>

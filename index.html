@@ -28,44 +28,13 @@
       margin: 0 15px;
       cursor: pointer;
     }
-    #infoBox {
-      position: absolute;
-      top: 100px;
-      right: 20px;
-      width: 280px;
-      padding: 15px;
-      background: rgba(0,0,0,0.8);
-      border: 2px solid #00ffff;
-      border-radius: 10px;
-      color: white;
-      font-family: Arial, sans-serif;
-      display: none;
-    }
-    #infoBox img {
-      width: 100%;
-      border-radius: 8px;
-      margin-bottom: 10px;
-    }
-    #infoBox h3 { margin: 5px 0; color: #ffcc00; }
   </style>
 </head>
 <body>
   <div id="title">Пантеон науки</div>
   <div id="disciplines">
     <span class="discipline" onclick="showScientists('physics')">Физика</span> |
-    <span class="discipline" onclick="showScientists('astronomy')">Астрономия</span> |
-    <span class="discipline" onclick="showScientists('biology')">Биология</span> |
-    <span class="discipline" onclick="showScientists('chemistry')">Химия</span> |
-    <span class="discipline" onclick="showScientists('tech')">Технологии</span> |
-    <span class="discipline" onclick="showScientists('medicine')">Медицина</span> |
-    <span class="discipline" onclick="showScientists('philosophy')">Философия</span> |
-    <span class="discipline" onclick="showScientists('history')">История</span>
-  </div>
-
-  <div id="infoBox">
-    <img id="sciImage" src="">
-    <h3 id="sciName"></h3>
-    <p id="sciBio"></p>
+    <span class="discipline" onclick="showScientists('astronomy')">Астрономия</span>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/build/three.min.js"></script>
@@ -80,146 +49,69 @@
 
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.enableZoom = true;
 
+    // 🌐 Сфера из точек (как мозг‑шар)
     const geometry = new THREE.SphereGeometry(3, 64, 64);
-    let material = new THREE.PointsMaterial({ 
-      color: 0x00aaff, 
-      size: 0.05, 
-      transparent: true,
-      opacity: 0.9 
+    const material = new THREE.PointsMaterial({
+      color: 0x00ffff,
+      size: 0.05
     });
     const points = new THREE.Points(geometry, material);
     scene.add(points);
 
-    const light = new THREE.PointLight(0xffffff, 2, 100);
-    light.position.set(5, 5, 5);
-    scene.add(light);
-
     camera.position.z = 8;
 
-    let scientistLabels = [];
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
-
-    // База учёных: имя → фото + описание
-    const scientistData = {
-      "Альберт Эйнштейн": {
-        img: "https://upload.wikimedia.org/wikipedia/commons/d/d3/Albert_Einstein_Head.jpg",
-        bio: "Создатель теории относительности. Один из величайших физиков XX века."
-      },
-      "Исаак Ньютон": {
-        img: "https://upload.wikimedia.org/wikipedia/commons/2/28/Sir_Isaac_Newton_%281642-1727%29.jpg",
-        bio: "Автор законов механики и теории гравитации. Отец классической физики."
-      },
-      "Ричард Фейнман": {
-        img: "https://upload.wikimedia.org/wikipedia/commons/e/e5/Richard_Feynman_Nobel.jpg",
-        bio: "Американский физик, лауреат Нобелевской премии. Один из создателей квантовой электродинамики."
-      },
-      "Галилео Галилей": {
-        img: "https://upload.wikimedia.org/wikipedia/commons/0/0e/Galileo.arp.300pix.jpg",
-        bio: "Отец современной астрономии. Подтвердил гелиоцентрическую систему."
-      }
-      // 👉 Добавим других по аналогии
-    };
-
-    const scientistsByDiscipline = {
-      physics: ["Альберт Эйнштейн", "Исаак Ньютон", "Ричард Фейнман"],
-      astronomy: ["Галилео Галилей", "Коперник", "Карл Саган"],
-      biology: ["Чарльз Дарвин", "Грегор Мендель", "Александр Флеминг"],
-      chemistry: ["Мария Кюри", "Дмитрий Менделеев", "Антуан Лавуазье"],
-      tech: ["Алан Тьюринг", "Никола Тесла", "Стив Джобс"],
-      medicine: ["Гиппократ", "Авиценна", "Йозеф Листер"],
-      philosophy: ["Аристотель", "Иммануил Кант", "Фридрих Ницше"],
-      history: ["Геродот", "Тацит", "Арнольд Тойнби"]
-    };
-
-    const colorsByDiscipline = {
-      physics: 0x00ffff,
-      astronomy: 0xff8800,
-      biology: 0x00ff00,
-      chemistry: 0xff00ff,
-      tech: 0xffffff,
-      medicine: 0xff0000,
-      philosophy: 0xffff00,
-      history: 0x8888ff
-    };
-
-    function showScientists(discipline) {
-      material.color.setHex(colorsByDiscipline[discipline]);
-      scientistLabels.forEach(label => scene.remove(label));
-      scientistLabels = [];
-
-      const names = scientistsByDiscipline[discipline];
-      const radius = 3.2;
-
-      names.forEach((name, i) => {
-        const spriteMaterial = new THREE.SpriteMaterial({ 
-          map: createTextTexture(name), 
-          transparent: true 
-        });
-        const sprite = new THREE.Sprite(spriteMaterial);
-
-        const phi = Math.acos(-1 + (2 * i) / names.length);
-        const theta = Math.sqrt(names.length * Math.PI) * phi;
-
-        sprite.position.set(
-          radius * Math.cos(theta) * Math.sin(phi),
-          radius * Math.sin(theta) * Math.sin(phi),
-          radius * Math.cos(phi)
-        );
-
-        sprite.scale.set(2, 1, 1);
-        sprite.userData = { name };
-        scene.add(sprite);
-        scientistLabels.push(sprite);
-      });
-    }
-
-    function createTextTexture(text) {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = 256;
-      canvas.height = 64;
-      ctx.fillStyle = "rgba(0,0,0,0)";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.font = "28px Arial";
-      ctx.fillStyle = "#ffcc00";
-      ctx.fillText(text, 10, 40);
-      return new THREE.CanvasTexture(canvas);
-    }
-
+    // 🔵 Плавное свечение
+    let t = 0;
     function animate() {
       requestAnimationFrame(animate);
+      t += 0.02;
+      material.opacity = 0.7 + 0.3 * Math.sin(t); // шар мигает
       controls.update();
       renderer.render(scene, camera);
     }
     animate();
 
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
+    // 🎓 Учёные по дисциплинам
+    const scientistsByDiscipline = {
+      physics: ["Эйнштейн", "Ньютон", "Фейнман"],
+      astronomy: ["Галилей", "Коперник", "Саган"]
+    };
 
-    // Клик по учёному
-    window.addEventListener('click', (event) => {
-      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-      raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObjects(scientistLabels);
+    const colorsByDiscipline = {
+      physics: 0x00ffff,
+      astronomy: 0xff8800
+    };
 
-      if (intersects.length > 0) {
-        const name = intersects[0].object.userData.name;
-        if (scientistData[name]) {
-          document.getElementById("sciImage").src = scientistData[name].img;
-          document.getElementById("sciName").innerText = name;
-          document.getElementById("sciBio").innerText = scientistData[name].bio;
-          document.getElementById("infoBox").style.display = "block";
-        }
-      }
-    });
+    let labels = [];
+    function showScientists(discipline) {
+      material.color.setHex(colorsByDiscipline[discipline]);
+      labels.forEach(l => scene.remove(l));
+      labels = [];
+
+      const names = scientistsByDiscipline[discipline];
+      const radius = 3.2;
+
+      names.forEach((name, i) => {
+        const spriteMat = new THREE.SpriteMaterial({ map: textTexture(name), transparent: true });
+        const sprite = new THREE.Sprite(spriteMat);
+        const angle = (i / names.length) * Math.PI * 2;
+        sprite.position.set(radius * Math.cos(angle), radius * Math.sin(angle), 0);
+        sprite.scale.set(2.5, 1.2, 1);
+        scene.add(sprite);
+        labels.push(sprite);
+      });
+    }
+
+    function textTexture(text) {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = 256; canvas.height = 64;
+      ctx.font = "28px Arial";
+      ctx.fillStyle = "#ffcc00";
+      ctx.fillText(text, 10, 40);
+      return new THREE.CanvasTexture(canvas);
+    }
   </script>
 </body>
 </html>

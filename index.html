@@ -10,150 +10,55 @@
       background: black;
       color: white;
       font-family: Arial, sans-serif;
-    }
-    #infoPanel {
-      position: absolute;
-      top: 50px;
-      right: 20px;
-      width: 250px;
-      padding: 15px;
-      background: rgba(20,20,20,0.9);
-      border: 1px solid #444;
-      border-radius: 10px;
-      display: none;
-    }
-    #infoPanel img {
-      width: 100%;
-      border-radius: 10px;
-    }
-    #infoPanel h2 {
-      margin: 10px 0 5px 0;
-    }
-    #infoPanel p {
-      font-size: 14px;
-    }
-    #infoPanel a {
-      display: block;
-      margin-top: 10px;
-      padding: 5px;
       text-align: center;
-      background: #1e90ff;
-      color: white;
-      border-radius: 5px;
-      text-decoration: none;
+    }
+    h1 {
+      position: absolute;
+      top: 10px;
+      width: 100%;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <h1 style="position:absolute;top:10px;left:20px;">Пантеон науки</h1>
-  <div id="infoPanel"></div>
+  <h1>Пантеон науки</h1>
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/examples/js/controls/OrbitControls.js"></script>
-
   <script>
-    // --- Сцена ---
+    // Сцена
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-
-    // Светящийся шар
+    // Шар
     const geometry = new THREE.SphereGeometry(3, 64, 64);
     const material = new THREE.MeshPhongMaterial({
       color: 0x0011ff,
       emissive: 0x2233ff,
-      shininess: 100,
-      transparent: true,
-      opacity: 0.6
+      shininess: 100
     });
     const sphere = new THREE.Mesh(geometry, material);
     scene.add(sphere);
 
     // Свет
     const light = new THREE.PointLight(0xffffff, 2, 100);
-    light.position.set(10,10,10);
+    light.position.set(10, 10, 10);
     scene.add(light);
 
-    // Данные учёных
-    const scientists = [
-      {
-        name: "Альберт Эйнштейн",
-        img: "https://upload.wikimedia.org/wikipedia/commons/d/d3/Albert_Einstein_Head.jpg",
-        desc: "Автор теории относительности. Один из величайших физиков XX века.",
-        link: "https://ru.wikipedia.org/wiki/Эйнштейн,_Альберт"
-      },
-      {
-        name: "Исаак Ньютон",
-        img: "https://upload.wikimedia.org/wikipedia/commons/2/29/Sir_Isaac_Newton_%281642-1727%29.jpg",
-        desc: "Создатель классической механики и законов движения.",
-        link: "https://ru.wikipedia.org/wiki/Ньютон,_Исаак"
-      },
-      {
-        name: "Мария Кюри",
-        img: "https://upload.wikimedia.org/wikipedia/commons/7/7e/Marie_Curie_c1920.jpg",
-        desc: "Первая женщина-лауреат Нобелевской премии, открыла радиоактивность.",
-        link: "https://ru.wikipedia.org/wiki/Кюри,_Мария"
-      },
-      {
-        name: "Галилео Галилей",
-        img: "https://upload.wikimedia.org/wikipedia/commons/5/5e/Galileo.arp.300pix.jpg",
-        desc: "Основатель современной астрономии и физики.",
-        link: "https://ru.wikipedia.org/wiki/Галилей,_Галилео"
-      }
-    ];
-
-    // Текстуры учёных как маленькие сферы
-    const loader = new THREE.TextureLoader();
-    const avatars = [];
-    const radius = 3.5;
-    scientists.forEach((sci, i) => {
-      const texture = loader.load(sci.img);
-      const mat = new THREE.MeshBasicMaterial({ map: texture });
-      const geo = new THREE.SphereGeometry(0.4, 32, 32);
-      const mesh = new THREE.Mesh(geo, mat);
-
-      const angle = (i / scientists.length) * Math.PI * 2;
-      mesh.position.set(Math.cos(angle) * radius, Math.sin(angle) * radius, 0);
-
-      scene.add(mesh);
-      avatars.push({mesh: mesh, data: sci});
-    });
-
     camera.position.z = 8;
-
-    // Клик по учёному
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
-    window.addEventListener('click', (event) => {
-      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-      raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObjects(avatars.map(a=>a.mesh));
-      if (intersects.length > 0) {
-        const found = avatars.find(a => a.mesh === intersects[0].object);
-        showInfo(found.data);
-      }
-    });
-
-    function showInfo(data) {
-      const panel = document.getElementById("infoPanel");
-      panel.style.display = "block";
-      panel.innerHTML = `
-        <img src="${data.img}">
-        <h2>${data.name}</h2>
-        <p>${data.desc}</p>
-        <a href="${data.link}" target="_blank">Подробнее</a>
-      `;
-    }
 
     // Анимация
     function animate() {
       requestAnimationFrame(animate);
-      sphere.rotation.y += 0.002;
+      sphere.rotation.y += 0.01;
       renderer.render(scene, camera);
     }
     animate();

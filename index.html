@@ -4,177 +4,123 @@
   <meta charset="UTF-8">
   <title>Пантеон науки</title>
   <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background: black;
-      font-family: Arial, sans-serif;
-      color: white;
-      text-align: center;
-    }
-    #title {
+    body { margin: 0; background: #000; color: white; font-family: Arial, sans-serif; }
+    #header { text-align: center; padding: 20px; font-size: 28px; font-weight: bold; color: #00aaff; }
+    #footer { text-align: center; padding: 10px; font-size: 18px; position: fixed; bottom: 0; width: 100%; color: #00ffaa; }
+    canvas { display: block; }
+    .label {
       position: absolute;
-      top: 20px;
-      width: 100%;
-      font-size: 36px;
-      font-weight: bold;
-      color: cyan;
-      text-shadow: 0 0 15px blue, 0 0 30px cyan;
-    }
-    #disciplines {
-      position: absolute;
-      bottom: 20px;
-      width: 100%;
-      font-size: 18px;
-      color: lightgray;
-      text-shadow: 0 0 5px black;
-    }
-    #tooltip {
-      position: absolute;
-      background: rgba(0,0,0,0.85);
-      color: white;
-      padding: 10px;
-      border-radius: 10px;
-      font-size: 14px;
-      display: none;
+      color: #fff;
+      background: rgba(0,0,0,0.6);
+      padding: 5px 10px;
+      border-radius: 5px;
       pointer-events: none;
-      text-align: center;
+      display: none;
     }
-    #tooltip img {
-      width: 80px;
+    .label img {
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
-      margin-top: 5px;
-      box-shadow: 0 0 10px cyan;
+      vertical-align: middle;
+      margin-right: 8px;
     }
   </style>
 </head>
 <body>
-  <div id="title">Пантеон науки</div>
-  <div id="tooltip"></div>
-  <div id="disciplines">
-    Физика • Астрономия • Биология • Химия • Технологии • Философия • История • Медицина
-  </div>
+  <div id="header">Пантеон науки</div>
+  <div id="container"></div>
+  <div id="footer">Физика | Астрономия | Биология | Химия | Технологии | Философия</div>
+  <div id="label" class="label"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/controls/OrbitControls.js"></script>
+  <!-- Подключаем three.js -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/examples/js/controls/OrbitControls.js"></script>
 
   <script>
-    // Сцена
+    const container = document.getElementById('container');
     const scene = new THREE.Scene();
-
-    // Камера
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    camera.position.z = 6;
-
-    // Рендер
-    const renderer = new THREE.WebGLRenderer({antialias: true});
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-
-    // Контролы
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    container.appendChild(renderer.domElement);
 
     // Свет
     const ambient = new THREE.AmbientLight(0x404040, 2);
     scene.add(ambient);
-
-    const pointLight = new THREE.PointLight(0x00ffff, 2, 100);
+    const pointLight = new THREE.PointLight(0x00aaff, 2, 100);
     pointLight.position.set(10, 10, 10);
     scene.add(pointLight);
 
-    // Звёздный фон
-    const starGeometry = new THREE.BufferGeometry();
-    const starCount = 1000;
-    const starVertices = [];
-    for (let i = 0; i < starCount; i++) {
-      const x = (Math.random() - 0.5) * 2000;
-      const y = (Math.random() - 0.5) * 2000;
-      const z = (Math.random() - 0.5) * 2000;
-      starVertices.push(x, y, z);
+    // Мозг — шар из точек (нейронов)
+    const neurons = [];
+    const neuronGeometry = new THREE.SphereGeometry(0.1, 16, 16);
+    const neuronMaterial = new THREE.MeshPhongMaterial({ color: 0x00aaff, emissive: 0x0077ff });
+    for (let i = 0; i < 200; i++) {
+      const neuron = new THREE.Mesh(neuronGeometry, neuronMaterial);
+      const phi = Math.acos(2 * Math.random() - 1);
+      const theta = 2 * Math.PI * Math.random();
+      const r = 3;
+      neuron.position.set(
+        r * Math.sin(phi) * Math.cos(theta),
+        r * Math.sin(phi) * Math.sin(theta),
+        r * Math.cos(phi)
+      );
+      scene.add(neuron);
+      neurons.push(neuron);
     }
-    starGeometry.setAttribute("position", new THREE.Float32BufferAttribute(starVertices, 3));
-    const starMaterial = new THREE.PointsMaterial({color: 0xffffff});
-    const stars = new THREE.Points(starGeometry, starMaterial);
-    scene.add(stars);
-
-    // Материал для нейронов
-    const neuronMaterial = new THREE.PointsMaterial({
-      color: 0x00ffff,
-      size: 0.06,
-      transparent: true,
-      opacity: 0.9
-    });
-
-    // Мозг (сфера из точек)
-    const brainGeometry = new THREE.SphereGeometry(2, 32, 32);
-    const neurons = new THREE.Points(brainGeometry, neuronMaterial);
-    scene.add(neurons);
-
-    // Линии-синапсы
-    const synapseMaterial = new THREE.LineBasicMaterial({color: 0x00ffff, transparent: true, opacity: 0.4});
-    const synapseGeometry = new THREE.BufferGeometry();
-    const synapseVertices = [];
-
-    const neuronPositions = brainGeometry.attributes.position.array;
-    for (let i = 0; i < neuronPositions.length; i += 9) {
-      if (Math.random() > 0.97) { // не слишком много связей
-        const x1 = neuronPositions[i], y1 = neuronPositions[i+1], z1 = neuronPositions[i+2];
-        const x2 = neuronPositions[i+3], y2 = neuronPositions[i+4], z2 = neuronPositions[i+5];
-        synapseVertices.push(x1,y1,z1, x2,y2,z2);
-      }
-    }
-
-    synapseGeometry.setAttribute("position", new THREE.Float32BufferAttribute(synapseVertices, 3));
-    const synapses = new THREE.LineSegments(synapseGeometry, synapseMaterial);
-    scene.add(synapses);
 
     // Учёные
     const scientists = [
       { name: "Альберт Эйнштейн", img: "https://upload.wikimedia.org/wikipedia/commons/d/d3/Albert_Einstein_Head.jpg" },
-      { name: "Исаак Ньютон", img: "https://upload.wikimedia.org/wikipedia/commons/f/f5/Isaac.Newton.jpg" },
-      { name: "Мария Кюри", img: "https://upload.wikimedia.org/wikipedia/commons/7/79/Marie_Curie_c1920.jpg" },
-      { name: "Чарльз Дарвин", img: "https://upload.wikimedia.org/wikipedia/commons/7/79/Charles_Darwin_1880.jpg" },
-      { name: "Никола Тесла", img: "https://upload.wikimedia.org/wikipedia/commons/d/d4/N.Tesla.JPG" },
-      { name: "Стивен Хокинг", img: "https://upload.wikimedia.org/wikipedia/commons/e/eb/Stephen_Hawking.StarChild.jpg" }
+      { name: "Исаак Ньютон", img: "https://upload.wikimedia.org/wikipedia/commons/3/39/Sir_Isaac_Newton_%281642-1727%29.jpg" },
+      { name: "Мария Кюри", img: "https://upload.wikimedia.org/wikipedia/commons/7/7e/Marie_Curie_c1920.jpg" },
+      { name: "Галилео Галилей", img: "https://upload.wikimedia.org/wikipedia/commons/5/5e/Galileo.arp.300pix.jpg" }
     ];
 
-    // Tooltip
-    const tooltip = document.getElementById("tooltip");
+    // Привязываем учёных к случайным нейронам
+    const scientistMap = new Map();
+    for (let i = 0; i < scientists.length; i++) {
+      scientistMap.set(neurons[i], scientists[i]);
+    }
 
-    // Луч для взаимодействия
+    // Управление камерой
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    camera.position.z = 6;
+
+    // Подсказка
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
+    const label = document.getElementById('label');
 
-    window.addEventListener("mousemove", (event) => {
+    function onMouseMove(event) {
       mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
       raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObject(neurons);
-
+      const intersects = raycaster.intersectObjects(neurons);
       if (intersects.length > 0) {
-        const scientist = scientists[Math.floor(Math.random() * scientists.length)];
-        tooltip.style.display = "block";
-        tooltip.style.left = event.clientX + 15 + "px";
-        tooltip.style.top = event.clientY + 15 + "px";
-        tooltip.innerHTML = `<b>${scientist.name}</b><br><img src="${scientist.img}">`;
+        const obj = intersects[0].object;
+        if (scientistMap.has(obj)) {
+          const sc = scientistMap.get(obj);
+          label.innerHTML = `<img src="${sc.img}"> ${sc.name}`;
+          label.style.left = event.clientX + 10 + "px";
+          label.style.top = event.clientY + 10 + "px";
+          label.style.display = "block";
+        }
       } else {
-        tooltip.style.display = "none";
+        label.style.display = "none";
       }
-    });
+    }
+    window.addEventListener('mousemove', onMouseMove);
 
     // Анимация
     function animate() {
       requestAnimationFrame(animate);
-      neurons.rotation.y += 0.002;
-      synapses.rotation.y += 0.002;
-      stars.rotation.y += 0.0005;
+      scene.rotation.y += 0.001;
       renderer.render(scene, camera);
     }
     animate();
 
-    // Адаптивность
-    window.addEventListener("resize", () => {
+    window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);

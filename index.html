@@ -1,135 +1,64 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Пантеон науки</title>
   <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background: black;
-      color: white;
-      font-family: Arial, sans-serif;
-    }
-    h1 {
-      position: absolute;
-      top: 10px;
-      width: 100%;
-      text-align: center;
-      z-index: 1;
-    }
-    #tooltip {
-      position: absolute;
-      background: rgba(0,0,0,0.7);
-      color: white;
-      padding: 4px 8px;
-      border-radius: 6px;
-      pointer-events: none;
-      display: none;
-      font-size: 14px;
-    }
+    body { margin: 0; overflow: hidden; background: black; }
+    canvas { display: block; }
   </style>
 </head>
 <body>
-  <h1>Пантеон науки</h1>
-  <div id="tooltip"></div>
-
-  <!-- three.js -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/build/three.min.js"></script>
-  <!-- Orbit controls -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/examples/js/controls/OrbitControls.js"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/controls/OrbitControls.js"></script>
   <script>
+    // Сцена
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(
-      75,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      1000
-    );
 
-    const renderer = new THREE.WebGLRenderer();
+    // Камера
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    camera.position.z = 3;
+
+    // Рендерер
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // Шар
-    const geometry = new THREE.SphereGeometry(3, 64, 64);
-    const material = new THREE.MeshPhongMaterial({
-      color: 0x2277ff,
-      emissive: 0x113355,
-      shininess: 120,
-      transparent: true,
-      opacity: 0.9
+    // Контролы (вращение мышкой)
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+    // Материал шара
+    const geometry = new THREE.SphereGeometry(1, 32, 32);
+    const material = new THREE.MeshStandardMaterial({
+      color: 0x3399ff,   // голубой
+      metalness: 0.7,
+      roughness: 0.2
     });
     const sphere = new THREE.Mesh(geometry, material);
     scene.add(sphere);
 
     // Свет
-    const light = new THREE.PointLight(0xffffff, 2, 100);
-    light.position.set(10, 10, 10);
+    const light = new THREE.PointLight(0xffffff, 1);
+    light.position.set(5, 5, 5);
     scene.add(light);
 
-    const ambient = new THREE.AmbientLight(0x404040);
+    const ambient = new THREE.AmbientLight(0x404040, 1.5);
     scene.add(ambient);
-
-    // Учёные (пример)
-    const scientists = [
-      { name: "Альберт Эйнштейн", position: [2.5, 0, 0] },
-      { name: "Исаак Ньютон", position: [-2, 1, 1] },
-      { name: "Мария Кюри", position: [0, 2.5, -1] },
-      { name: "Галилео Галилей", position: [1, -2, 2] },
-      { name: "Никола Тесла", position: [-1, -2.5, -1] }
-    ];
-
-    const points = [];
-    scientists.forEach(s => {
-      const g = new THREE.SphereGeometry(0.1, 16, 16);
-      const m = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-      const mesh = new THREE.Mesh(g, m);
-      mesh.position.set(...s.position);
-      mesh.userData = { name: s.name };
-      scene.add(mesh);
-      points.push(mesh);
-    });
-
-    // Контроллер камеры (вращение/масштаб мышкой)
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-
-    camera.position.z = 8;
-
-    // Подсказка
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
-    const tooltip = document.getElementById("tooltip");
-
-    window.addEventListener("mousemove", (event) => {
-      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-      raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObjects(points);
-
-      if (intersects.length > 0) {
-        const obj = intersects[0].object;
-        tooltip.style.display = "block";
-        tooltip.style.left = event.clientX + 10 + "px";
-        tooltip.style.top = event.clientY + 10 + "px";
-        tooltip.innerHTML = obj.userData.name;
-        obj.material.color.set(0xff0000); // подсветка
-      } else {
-        tooltip.style.display = "none";
-        points.forEach(p => p.material.color.set(0xffff00));
-      }
-    });
 
     // Анимация
     function animate() {
       requestAnimationFrame(animate);
-      controls.update();
+      sphere.rotation.y += 0.01;
       renderer.render(scene, camera);
     }
     animate();
+
+    // Масштаб окна
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
   </script>
 </body>
 </html>

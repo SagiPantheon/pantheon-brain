@@ -1,5 +1,51 @@
 <!DOCTYPE html>
-<html><body>
-  <h1>Тестовая страница</h1>
-  <p>Если ты видишь это — обновления доходят.</p>
-</body></html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <title>Куб</title>
+  <style>
+    body { margin:0; overflow:hidden; background:#1f2a44; }
+    #info { position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.6); color:#fff; padding:6px 10px; border-radius:5px; font-family: system-ui,sans-serif; }
+  </style>
+</head>
+<body>
+  <div id="info">Загрузка...</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.min.js"></script>
+  <script>
+    const info = document.getElementById("info");
+    if (typeof THREE === "undefined") {
+      info.textContent = "Ошибка: three.js не загрузился.";
+    } else {
+      info.textContent = "three.js загружен, запускаем куб.";
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x1f2a44);
+      const camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 100);
+      camera.position.z = 3;
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+      const cube = new THREE.Mesh(
+        new THREE.BoxGeometry(),
+        new THREE.MeshNormalMaterial()
+      );
+      scene.add(cube);
+
+      window.addEventListener("resize", () => {
+        camera.aspect = innerWidth / innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      function animate() {
+        requestAnimationFrame(animate);
+        cube.rotation.x += 0.01;
+        cube.rotation.y += 0.015;
+        renderer.render(scene, camera);
+      }
+      animate();
+      info.textContent = "Куб крутится.";
+    }
+  </script>
+</body>
+</html>

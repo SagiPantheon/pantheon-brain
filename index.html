@@ -1,99 +1,41 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <title>Пантеон — куб</title>
+  <meta charset="UTF-8">
+  <title>Тест куба</title>
   <style>
-    body { margin:0; overflow:hidden; background:#0a0a1f; }
-    #label {
-      position:absolute;
-      top:10px;
-      left:50%;
-      transform:translateX(-50%);
-      color:#fff;
-      font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
-      font-size:20px;
-      text-shadow:0 0 10px #33ccff;
-      pointer-events:none;
-    }
-    canvas{display:block;}
+    body { margin: 0; overflow: hidden; background: black; }
+    canvas { display: block; }
   </style>
 </head>
 <body>
-  <div id="label">Пантеон Куб</div>
-
   <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/examples/js/controls/OrbitControls.js"></script>
   <script>
-    // сцена и камера
+    // Сцена
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 0, 6);
-
-    // рендерер
+    // Камера
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 5;
+    // Рендерер
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
-
-    // звёздный фон
-    const starsGeo = new THREE.BufferGeometry();
-    const starCount = 500;
-    const starVerts = [];
-    for (let i = 0; i < starCount; i++) {
-      const x = (Math.random() - 0.5) * 100;
-      const y = (Math.random() - 0.5) * 100;
-      const z = (Math.random() - 0.5) * 100;
-      starVerts.push(x, y, z);
-    }
-    starsGeo.setAttribute("position", new THREE.Float32BufferAttribute(starVerts, 3));
-    const starsMat = new THREE.PointsMaterial({ color: 0x8888ff, size: 0.7, transparent: true, opacity: 0.6 });
-    const stars = new THREE.Points(starsGeo, starsMat);
-    scene.add(stars);
-
-    // освещение
-    const ambient = new THREE.AmbientLight(0x444455, 1.2);
-    scene.add(ambient);
-    const point = new THREE.PointLight(0xffffff, 1.5, 100);
-    point.position.set(5, 5, 5);
-    scene.add(point);
-
-    // куб
-    const boxGeo = new THREE.BoxGeometry(1.8, 1.8, 1.8);
-    const boxMat = new THREE.MeshStandardMaterial({
-      color: 0x3399ff,
-      metalness: 0.5,
-      roughness: 0.3,
-      emissive: 0x112244,
-      emissiveIntensity: 0.2
-    });
-    const cube = new THREE.Mesh(boxGeo, boxMat);
+    // Куб
+    const geometry = new THREE.BoxGeometry(1, 1, 1);
+    const material = new THREE.MeshNormalMaterial(); // цвет по нормалям, видно вращение
+    const cube = new THREE.Mesh(geometry, material);
     scene.add(cube);
-
-    // контролы
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.1;
-    controls.minDistance = 3;
-    controls.maxDistance = 12;
-
-    // анимация
-    let time = 0;
+    // Анимация
     function animate() {
       requestAnimationFrame(animate);
-      time += 0.02;
-      const scale = 1 + Math.sin(time * 1.2) * 0.05;
-      cube.scale.setScalar(scale);
-      cube.rotation.y += 0.005;
-      cube.rotation.x += 0.002;
-      stars.rotation.y += 0.0005;
-      controls.update();
+      cube.rotation.x += 0.01;
+      cube.rotation.y += 0.01;
       renderer.render(scene, camera);
     }
     animate();
-
-    // ресайз
+    // Адаптация под окно
     window.addEventListener("resize", () => {
-      camera.aspect = window.innerWidth/window.innerHeight;
+      camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });

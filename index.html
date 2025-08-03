@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <title>Brain Proto v0.2.0</title>
+  <title>Brain Proto v0.3.0</title>
   <style>
     body { margin:0; overflow:hidden; background:#1f2a44; font-family: system-ui,-apple-system,BlinkMacSystemFont,sans-serif; }
     #infoBox {
@@ -34,27 +34,21 @@
 </head>
 <body>
   <div id="infoBox">Загрузка...</div>
-  <div id="version">v0.2.0</div>
+  <div id="version">v0.3.0</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.154.0/examples/js/controls/OrbitControls.js"></script>
+  <script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js';
+    import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.154.0/examples/jsm/controls/OrbitControls.js';
 
-  <script>
-    const APP_VERSION = "v0.2.0";
+    const APP_VERSION = "v0.3.0";
     console.log(`[${APP_VERSION}] Старт`);
 
     const infoBox = document.getElementById("infoBox");
 
-    if (typeof THREE === "undefined") {
-      infoBox.textContent = "Ошибка: three.js не загрузился."; 
-      console.error("three.js не определён");
-      throw new Error("three.js не загружен");
-    }
-
-    // Сцена и камера
+    // сцена и камера
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x1f2a44);
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+    const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 100);
     camera.position.set(0, 1.6, 3);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -62,28 +56,28 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // Контролы (вращение мышкой)
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    // контролы
+    const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.15;
     controls.minDistance = 1;
     controls.maxDistance = 8;
 
-    // Свет
+    // свет
     const hemi = new THREE.HemisphereLight(0xffffff, 0x444466, 0.8);
     scene.add(hemi);
     const dir = new THREE.DirectionalLight(0xffffff, 0.5);
     dir.position.set(5, 5, 5);
     scene.add(dir);
 
-    // Куб
+    // куб
     const geometry = new THREE.BoxGeometry(1,1,1);
     const material = new THREE.MeshStandardMaterial({ color: 0x3366ff, roughness:0.4, metalness:0.2 });
     const cube = new THREE.Mesh(geometry, material);
     scene.add(cube);
     const originalColor = material.color.clone();
 
-    // Raycaster для наведения и клика
+    // лучи для hover/click
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
     let isHover = false;
@@ -94,19 +88,18 @@
     }
 
     window.addEventListener("pointermove", updatePointer);
-    window.addEventListener("click", (e) => {
-      updatePointer(e);
+    window.addEventListener("click", () => {
       raycaster.setFromCamera(pointer, camera);
       const hits = raycaster.intersectObject(cube);
       if (hits.length) {
-        console.log(`[${APP_VERSION}] Куб кликнут`);
-        infoBox.textContent = "Клик — всё работает. Следующий шаг: модель мозга."; 
+        infoBox.textContent = "Клик: куб, всё работает."; 
         cube.scale.set(1.1,1.1,1.1);
         setTimeout(() => cube.scale.set(1,1,1), 150);
+        console.log(`[${APP_VERSION}] Куб кликнут`);
       }
     });
 
-    // Адаптация размера
+    // ресайз
     window.addEventListener("resize", () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
@@ -114,32 +107,32 @@
       console.log(`[${APP_VERSION}] Ресайз`);
     });
 
-    // Анимация
+    // анимация
     let last = performance.now();
     function animate(time) {
       requestAnimationFrame(animate);
       const delta = (time - last) / 1000;
       last = time;
 
-      // Вращение куба
+      // вращение
       cube.rotation.x += 0.5 * delta;
       cube.rotation.y += 1.0 * delta;
 
-      // Ховер-подсветка
+      // hover
       raycaster.setFromCamera(pointer, camera);
-      const intersect = raycaster.intersectObject(cube);
-      if (intersect.length) {
+      const intersects = raycaster.intersectObject(cube);
+      if (intersects.length) {
         if (!isHover) {
           isHover = true;
           material.color.set(0xffff66);
-          infoBox.textContent = "Навёл на куб — он подсвечен. Кликни."; 
+          infoBox.textContent = "Навёл на куб — кликай."; 
           console.log(`[${APP_VERSION}] Ховер`);
         }
       } else {
         if (isHover) {
           isHover = false;
           material.color.copy(originalColor);
-          infoBox.textContent = "Наведи на куб, кликни — будет реакция.";
+          infoBox.textContent = "Наведи на куб, кликни."; 
         }
       }
 

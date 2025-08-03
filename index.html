@@ -2,164 +2,54 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <title>Brain Prototype v0.1.0</title>
+  <title>Простой куб</title>
   <style>
-    body { margin:0; overflow:hidden; font-family: system-ui,Segoe UI,sans-serif; background:#0f172a; }
-    #infoBox {
+    body { margin:0; overflow:hidden; background:#222; }
+    #info {
       position: absolute;
-      bottom: 18px;
-      left: 18px;
-      background: rgba(0,0,0,0.75);
+      top: 10px;
+      left: 10px;
       color: #fff;
-      padding: 12px 14px;
-      border-radius: 6px;
-      font-size: 13px;
-      max-width: 320px;
-      line-height:1.2;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-    }
-    #version {
-      position: absolute;
-      top: 8px;
-      right: 12px;
-      background: rgba(255,255,255,0.9);
-      padding: 4px 10px;
+      font-family: system-ui, sans-serif;
+      background: rgba(0,0,0,0.5);
+      padding: 6px 10px;
       border-radius: 5px;
-      font-size: 11px;
-      font-weight: bold;
-      color: #1f2a44;
-      letter-spacing: 0.5px;
+      font-size: 13px;
     }
   </style>
 </head>
 <body>
-  <div id="infoBox">Наведи на куб, кликни — увидишь реакцию.</div>
-  <div id="version">v0.1.0</div>
+  <div id="info">Если куб не видно — открой консоль (F12) и скинь ошибки сюда.</div>
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.154.0/examples/js/controls/OrbitControls.js"></script>
-
   <script>
-    const APP_VERSION = "v0.1.0";
-    console.log(`[${APP_VERSION}] Старт приложения`);
-
-    // --- конфиг фич ---
-    const config = {
-      enableHighlight: true,
-      rotationSpeed: 1.0, // множитель на скорость вращения
-    };
-
-    // --- сцена, камера, рендерер ---
+    // Простая сцена с вращающимся кубом
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x1f2a44);
-
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.set(0, 1.8, 3.5);
+    const camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 100);
+    camera.position.z = 3;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(innerWidth, innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // --- управление камерой ---
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.15;
-    controls.minDistance = 1;
-    controls.maxDistance = 10;
-
-    // --- свет ---
-    const hemi = new THREE.HemisphereLight(0xffffff, 0x444466, 0.9);
-    scene.add(hemi);
-    const dir = new THREE.DirectionalLight(0xffffff, 0.6);
-    dir.position.set(5, 5, 5);
-    scene.add(dir);
-
-    // --- базовый объект: куб ---
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshStandardMaterial({
-      color: 0x3366ff,
-      roughness: 0.4,
-      metalness: 0.2,
+    window.addEventListener("resize", () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
     });
+
+    const geometry = new THREE.BoxGeometry();
+    const material = new THREE.MeshNormalMaterial();
     const cube = new THREE.Mesh(geometry, material);
     scene.add(cube);
 
-    // сохранить оригинальный цвет
-    const originalColor = material.color.clone();
-    let isHover = false;
-
-    // raycaster для наведения/клика
-    const raycaster = new THREE.Raycaster();
-    const pointer = new THREE.Vector2();
-
-    // инфо-бокс
-    const infoBox = document.getElementById("infoBox");
-
-    // обновление позиции указателя
-    function updatePointer(event) {
-      pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-      pointer.y = - (event.clientY / window.innerHeight) * 2 + 1;
-    }
-    window.addEventListener("pointermove", (e) => {
-      updatePointer(e);
-    });
-    window.addEventListener("click", (e) => {
-      updatePointer(e);
-      raycaster.setFromCamera(pointer, camera);
-      const intersects = raycaster.intersectObject(cube);
-      if (intersects.length) {
-        console.log(`[${APP_VERSION}] Куб кликнут`, intersects[0]);
-        infoBox.textContent = "Это куб. Ты можешь заменить его позже на модель мозга. Камера управляется мышкой.";
-        // визуальный отклик
-        cube.scale.set(1.1, 1.1, 1.1);
-        setTimeout(() => cube.scale.set(1, 1, 1), 150);
-      }
-    });
-
-    // ресайз
-    window.addEventListener("resize", () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      console.log(`[${APP_VERSION}] Ресайз: ${window.innerWidth}x${window.innerHeight}`);
-    });
-
-    // анимация
-    let lastTime = performance.now();
-    function animate(time) {
+    function animate() {
       requestAnimationFrame(animate);
-      const delta = (time - lastTime) / 1000;
-      lastTime = time;
-
-      // вращение куба
-      cube.rotation.x += 0.5 * config.rotationSpeed * delta;
-      cube.rotation.y += 1.0 * config.rotationSpeed * delta;
-
-      // ховер-подсветка
-      if (config.enableHighlight) {
-        raycaster.setFromCamera(pointer, camera);
-        const intersects = raycaster.intersectObject(cube);
-        if (intersects.length) {
-          if (!isHover) {
-            isHover = true;
-            material.color.set(0xffff66);
-            infoBox.textContent = "Навёл на куб — он подсвечен. Кликни, чтобы получить фидбэк."; 
-            console.log(`[${APP_VERSION}] Ховер на куб`);
-          }
-        } else {
-          if (isHover) {
-            isHover = false;
-            material.color.copy(originalColor);
-            infoBox.textContent = "Наведи на куб или кликни по нему.";
-          }
-        }
-      }
-
-      controls.update();
+      cube.rotation.x += 0.01;
+      cube.rotation.y += 0.015;
       renderer.render(scene, camera);
     }
-    animate(performance.now());
+    animate();
   </script>
 </body>
 </html>

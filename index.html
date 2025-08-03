@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <title>Brain Proto v0.3.0</title>
+  <title>Brain Proto v0.3.1</title>
   <style>
     body { margin:0; overflow:hidden; background:#1f2a44; font-family: system-ui,-apple-system,BlinkMacSystemFont,sans-serif; }
     #infoBox {
@@ -34,13 +34,14 @@
 </head>
 <body>
   <div id="infoBox">Загрузка...</div>
-  <div id="version">v0.3.0</div>
+  <div id="version">v0.3.1</div>
 
   <script type="module">
+    // Импорт по полному пути — bare "three" работать не будет в браузере без сборщика
     import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js';
     import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.154.0/examples/jsm/controls/OrbitControls.js';
 
-    const APP_VERSION = "v0.3.0";
+    const APP_VERSION = "v0.3.1";
     console.log(`[${APP_VERSION}] Старт`);
 
     const infoBox = document.getElementById("infoBox");
@@ -77,7 +78,7 @@
     scene.add(cube);
     const originalColor = material.color.clone();
 
-    // лучи для hover/click
+    // Raycaster
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
     let isHover = false;
@@ -99,26 +100,18 @@
       }
     });
 
-    // ресайз
     window.addEventListener("resize", () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.aspect = innerWidth / innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
-      console.log(`[${APP_VERSION}] Ресайз`);
     });
 
-    // анимация
-    let last = performance.now();
     function animate(time) {
       requestAnimationFrame(animate);
-      const delta = (time - last) / 1000;
-      last = time;
+      cube.rotation.x += 0.5 * ((time - (animate.last || time)) / 1000);
+      cube.rotation.y += 1.0 * ((time - (animate.last || time)) / 1000);
+      animate.last = time;
 
-      // вращение
-      cube.rotation.x += 0.5 * delta;
-      cube.rotation.y += 1.0 * delta;
-
-      // hover
       raycaster.setFromCamera(pointer, camera);
       const intersects = raycaster.intersectObject(cube);
       if (intersects.length) {

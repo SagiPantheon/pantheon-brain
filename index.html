@@ -1,138 +1,26 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="utf-8" />
-  <title>Brain Proto v0.3.1</title>
-  <style>
-    body { margin:0; overflow:hidden; background:#1f2a44; font-family: system-ui,-apple-system,BlinkMacSystemFont,sans-serif; }
-    #infoBox {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      background: rgba(0,0,0,0.65);
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: 6px;
-      font-size: 13px;
-      max-width: 320px;
-      line-height:1.2;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-    }
-    #version {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      background: #fff;
-      color: #1f2a44;
-      padding: 4px 10px;
-      border-radius: 5px;
-      font-size: 11px;
-      font-weight: bold;
-      letter-spacing: 0.5px;
-    }
-  </style>
-</head>
-<body>
-  <div id="infoBox">Загрузка...</div>
-  <div id="version">v0.3.1</div>
+<script>
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
 
-  <script type="module">
-    // Импорт по полному пути — bare "three" работать не будет в браузере без сборщика
-    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js';
-    import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.154.0/examples/jsm/controls/OrbitControls.js';
+  const light = new THREE.AmbientLight(0xffffff);
+  scene.add(light);
 
-    const APP_VERSION = "v0.3.1";
-    console.log(`[${APP_VERSION}] Старт`);
+  const geometry = new THREE.BoxGeometry();
+  const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+  const cube = new THREE.Mesh(geometry, material);
+  scene.add(cube);
 
-    const infoBox = document.getElementById("infoBox");
+  camera.position.z = 2;
 
-    // сцена и камера
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x1f2a44);
-    const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 100);
-    camera.position.set(0, 1.6, 3);
+  function animate() {
+    requestAnimationFrame(animate);
+    cube.rotation.x += 0.01;
+    cube.rotation.y += 0.01;
+    renderer.render(scene, camera);
+  }
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-
-    // контролы
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.15;
-    controls.minDistance = 1;
-    controls.maxDistance = 8;
-
-    // свет
-    const hemi = new THREE.HemisphereLight(0xffffff, 0x444466, 0.8);
-    scene.add(hemi);
-    const dir = new THREE.DirectionalLight(0xffffff, 0.5);
-    dir.position.set(5, 5, 5);
-    scene.add(dir);
-
-    // куб
-    const geometry = new THREE.BoxGeometry(1,1,1);
-    const material = new THREE.MeshStandardMaterial({ color: 0x3366ff, roughness:0.4, metalness:0.2 });
-    const cube = new THREE.Mesh(geometry, material);
-    scene.add(cube);
-    const originalColor = material.color.clone();
-
-    // Raycaster
-    const raycaster = new THREE.Raycaster();
-    const pointer = new THREE.Vector2();
-    let isHover = false;
-
-    function updatePointer(e) {
-      pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
-      pointer.y = - (e.clientY / window.innerHeight) * 2 + 1;
-    }
-
-    window.addEventListener("pointermove", updatePointer);
-    window.addEventListener("click", () => {
-      raycaster.setFromCamera(pointer, camera);
-      const hits = raycaster.intersectObject(cube);
-      if (hits.length) {
-        infoBox.textContent = "Клик: куб, всё работает."; 
-        cube.scale.set(1.1,1.1,1.1);
-        setTimeout(() => cube.scale.set(1,1,1), 150);
-        console.log(`[${APP_VERSION}] Куб кликнут`);
-      }
-    });
-
-    window.addEventListener("resize", () => {
-      camera.aspect = innerWidth / innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-
-    function animate(time) {
-      requestAnimationFrame(animate);
-      cube.rotation.x += 0.5 * ((time - (animate.last || time)) / 1000);
-      cube.rotation.y += 1.0 * ((time - (animate.last || time)) / 1000);
-      animate.last = time;
-
-      raycaster.setFromCamera(pointer, camera);
-      const intersects = raycaster.intersectObject(cube);
-      if (intersects.length) {
-        if (!isHover) {
-          isHover = true;
-          material.color.set(0xffff66);
-          infoBox.textContent = "Навёл на куб — кликай."; 
-          console.log(`[${APP_VERSION}] Ховер`);
-        }
-      } else {
-        if (isHover) {
-          isHover = false;
-          material.color.copy(originalColor);
-          infoBox.textContent = "Наведи на куб, кликни."; 
-        }
-      }
-
-      controls.update();
-      renderer.render(scene, camera);
-    }
-    animate(performance.now());
-  </script>
-</body>
-</html>
+  animate();
+</script>

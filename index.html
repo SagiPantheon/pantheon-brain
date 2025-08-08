@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Пантеон науки — стартовая сцена (v2)</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="watermark">build: cube-0808-1</div>
+  <header class="topbar">
+    <h1>Пантеон науки</h1>
+    <nav>
+      <a href="#physics">Физика</a>
+      <a href="#astro">Астрономия</a>
+      <a href="#bio">Биология</a>
+      <a href="#tech">Технологии</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="stage">
+      <canvas id="scene"></canvas>
+    </section>
+    <section id="content">
+      <h2>Идея</h2>
+      <p>Интерактивный «пантеон» учёных и идей. Дальше сюда придёт мозг.</p>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/three@0.161.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.161.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="./main.js"></script>
+</body>
+</html>

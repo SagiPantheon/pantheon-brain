@@ -1,5 +1,4 @@
-// main.js — сцена + куб + загрузка тестовой модели (шлем)
-// вызываться будет как: init(THREE, OrbitControls, GLTFLoader)
+// main.js — сцена + куб + загрузка тестовой модели (утка)
 export default function init(THREE, OrbitControls, GLTFLoader) {
   // Рендерер и канвас
   const canvas = document.getElementById('scene');
@@ -35,7 +34,7 @@ export default function init(THREE, OrbitControls, GLTFLoader) {
   scene.add(dirLight);
   scene.add(new THREE.AmbientLight(0xffffff, 0.25));
 
-  // Земля (для ориентира)
+  // Земля
   const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(20, 20),
     new THREE.MeshStandardMaterial({ color: 0x0f151c, metalness: 0.1, roughness: 0.9 })
@@ -43,7 +42,7 @@ export default function init(THREE, OrbitControls, GLTFLoader) {
   ground.rotation.x = -Math.PI / 2;
   scene.add(ground);
 
-  // Куб (пусть остаётся как «диагностика сцены»)
+  // Куб
   const cube = new THREE.Mesh(
     new THREE.BoxGeometry(1, 1, 1),
     new THREE.MeshStandardMaterial({ color: 0xff6a00, metalness: 0.35, roughness: 0.4 })
@@ -51,14 +50,14 @@ export default function init(THREE, OrbitControls, GLTFLoader) {
   cube.position.y = 0.5;
   scene.add(cube);
 
-  // Загрузка тестовой 3D-модели (шлем). Потом заменим на brain.glb
+  // Загрузка тестовой 3D-модели (утка)
   const loader = new GLTFLoader();
   loader.load(
-    'https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf',
+    'https://threejs.org/examples/models/gltf/Duck/glTF/Duck.gltf',
     (gltf) => {
       const model = gltf.scene;
       model.position.set(0, 0.5, 0);
-      model.scale.set(1.5, 1.5, 1.5);
+      model.scale.set(1.2, 1.2, 1.2);
       scene.add(model);
       console.log('GLTF loaded:', model);
     },

@@ -2,7 +2,7 @@
 (function () {
   // Путь к модели. Если у тебя BrainStem.glb лежит в assets/models/, оставь как есть.
   // Если он в assets/ без подпапки models — поменяй строку на 'assets/BrainStem.glb'.
-  const MODEL_PATH = 'assets/models/BrainStem.glb';
+  const MODEL_PATH = 'assets/BrainStem.glb';
 
   const canvas = document.querySelector('#brainCanvas');
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });

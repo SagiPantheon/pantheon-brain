@@ -1,17 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pantheon Brain</title>
   <link rel="stylesheet" href="style.css" />
-  
-  <!-- Three.js и GLTFLoader через CDN -->
-  <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
-  <script src="https://unpkg.com/three@0.158.0/examples/js/loaders/GLTFLoader.js"></script>
+
+  <!-- ВАЖНО: совместимые версии для глобального THREE и THREE.GLTFLoader -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
   <canvas id="brainCanvas"></canvas>
+
+  <!-- Твой главный скрипт -->
   <script src="main.js"></script>
 </body>
 </html>

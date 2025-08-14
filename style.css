@@ -1,17 +1,9 @@
-/* Полный чёрный фон, без скролла, канвас на весь экран */
-html, body {
-  height: 100%;
-}
-
 body {
   margin: 0;
   overflow: hidden;
-  background: #000;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: black;
 }
 
 canvas {
   display: block;
-  width: 100vw;
-  height: 100vh;
 }

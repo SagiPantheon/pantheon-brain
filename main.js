@@ -1,93 +1,82 @@
-// main.js — сцена + куб + загрузка тестовой модели (утка)
-export default function init(THREE, OrbitControls, GLTFLoader) {
-  // Рендерер и канвас
-  const canvas = document.getElementById('scene');
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  resize();
-  window.addEventListener('resize', resize);
+(function () {
+  const THREE_CDN = 'https://unpkg.com/three@0.158.0/build/three.min.js';
+  const GLTF_CDN  = 'https://unpkg.com/three@0.158.0/examples/jsm/loaders/GLTFLoader.js';
+  const MODEL_URL = 'assets/models/BrainStem.glb';
 
-  // Сцена
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0b0e13);
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.async = true;
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
 
-  // Камера
-  const camera = new THREE.PerspectiveCamera(
-    60,
-    window.innerWidth / (window.innerHeight * 0.7),
-    0.1,
-    100
-  );
-  camera.position.set(2.2, 1.6, 3.0);
+  function ensureGLTFLoader() {
+    return new Promise((resolve, reject) => {
+      if (window.GLTFLoader) return resolve();
+      const s = document.createElement('script');
+      s.type = 'module';
+      s.textContent = `
+        import { GLTFLoader } from '${GLTF_CDN}';
+        window.GLTFLoader = GLTFLoader;
+      `;
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
 
-  // Управление мышкой
-  const controls = new OrbitControls.OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
-  controls.dampingFactor = 0.05;
-  controls.enablePan = true;
-  controls.enableZoom = true;
-  controls.target.set(0, 0.5, 0);
-
-  // Свет
-  const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
-  dirLight.position.set(3, 5, 2);
-  scene.add(dirLight);
-  scene.add(new THREE.AmbientLight(0xffffff, 0.25));
-
-  // Земля
-  const ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(20, 20),
-    new THREE.MeshStandardMaterial({ color: 0x0f151c, metalness: 0.1, roughness: 0.9 })
-  );
-  ground.rotation.x = -Math.PI / 2;
-  scene.add(ground);
-
-  // Куб
-  const cube = new THREE.Mesh(
-    new THREE.BoxGeometry(1, 1, 1),
-    new THREE.MeshStandardMaterial({ color: 0xff6a00, metalness: 0.35, roughness: 0.4 })
-  );
-  cube.position.y = 0.5;
-  scene.add(cube);
-
-  // Загрузка тестовой 3D-модели (утка)
-  const loader = new GLTFLoader();
-  loader.load(
-    'https://threejs.org/examples/models/gltf/Duck/glTF/Duck.gltf',
-    (gltf) => {
-      const model = gltf.scene;
-      model.position.set(0, 0.5, 0);
-      model.scale.set(1.2, 1.2, 1.2);
-      scene.add(model);
-      console.log('GLTF loaded:', model);
-    },
-    undefined,
-    (err) => {
-      console.error('GLTF load error:', err);
+  async function boot() {
+    if (!window.THREE) {
+      await loadScript(THREE_CDN);
     }
-  );
+    await ensureGLTFLoader();
 
-  // Анимация
-  let last = 0;
-  function animate(t = 0) {
-    const dt = (t - last) / 1000;
-    last = t;
+    const canvas = document.querySelector('#brainCanvas');
 
-    cube.rotation.y += dt * 0.8;
-    cube.rotation.x += dt * 0.3;
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
 
-    controls.update();
-    renderer.render(scene, camera);
-    requestAnimationFrame(animate);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 1.2, 2.2);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 1));
+    const dir = new THREE.DirectionalLight(0xffffff, 0.6);
+    dir.position.set(2, 3, 2);
+    scene.add(dir);
+
+    const loader = new window.GLTFLoader();
+    loader.load(
+      MODEL_URL,
+      (gltf) => {
+        const model = gltf.scene;
+        model.rotation.y = Math.PI;
+        scene.add(model);
+        animate();
+        console.log('GLB loaded:', MODEL_URL);
+      },
+      undefined,
+      (err) => {
+        console.error('GLB load error:', err);
+      }
+    );
+
+    function animate() {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    }
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
   }
-  requestAnimationFrame(animate);
 
-  // Ресайз
-  function resize() {
-    const w = window.innerWidth;
-    const h = window.innerHeight * 0.7;
-    renderer.setSize(w, h, false);
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-  }
-}
+  boot().catch((e) => console.error('Boot error:', e));
+})();

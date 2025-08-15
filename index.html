@@ -1,24 +1,16 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Pantheon Brain</title>
-
-  <!-- фавикон (можно оставить как есть) -->
-  <link rel="icon" href="favicon.ico" type="image/x-icon" />
-
-  <!-- стили -->
-  <link rel="stylesheet" href="style.css" />
-
-  <!-- Three.js + GLTFLoader (совместимые версии, БЕЗ import) -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/loaders/GLTFLoader.js"></script>
+  <title>Pantheon Brain — test</title>
+  <style>
+    html, body { height: 100%; margin: 0; background:#0b0f1a; }
+    canvas { display:block; }
+  </style>
 </head>
 <body>
-  <canvas id="brainCanvas"></canvas>
-
-  <!-- твой главный скрипт -->
-  <script src="main.js"></script>
+  <canvas id="c"></canvas>
+  <script type="module" src="./main.js"></script>
 </body>
 </html>

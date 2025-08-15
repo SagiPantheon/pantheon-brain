@@ -1,10 +1,15 @@
-// Полный рабочий скрипт. Использует глобальные THREE и THREE.GLTFLoader.
+// main.js — без import, работает с three@0.128 и GLTFLoader из index.html
 (function () {
-  // Путь к модели. Если у тебя BrainStem.glb лежит в assets/models/, оставь как есть.
-  // Если он в assets/ без подпапки models — поменяй строку на 'assets/BrainStem.glb'.
-  const MODEL_PATH = 'assets/BrainStem.glb';
+  // Кэш-бастинг, чтобы точно не ловить старый файл
+  const MODEL_PATH = 'assets/BrainStem.glb?cb=' + Date.now();
 
-  const canvas = document.querySelector('#brainCanvas');
+  const canvas = document.querySelector('#brainCanvas') || (() => {
+    const c = document.createElement('canvas');
+    c.id = 'brainCanvas';
+    document.body.prepend(c);
+    return c;
+  })();
+
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -22,6 +27,7 @@
   let subject = null;
 
   // Загрузка GLB
+  console.log('Loading GLB from:', MODEL_PATH);
   const loader = new THREE.GLTFLoader();
   loader.load(
     MODEL_PATH,
@@ -30,15 +36,20 @@
       subject.rotation.y = Math.PI;
       subject.scale.set(1.2, 1.2, 1.2);
       scene.add(subject);
+      console.log('GLB loaded OK');
       animate();
-      console.log('GLB loaded:', MODEL_PATH);
     },
     undefined,
     (err) => {
       console.error('GLB load error:', err);
-      // Резервный объект, чтобы страница не была пустой
+      // Резерв: шар, чтобы страница была живой
       const geo = new THREE.SphereGeometry(0.8, 64, 64);
-      const mat = new THREE.MeshStandardMaterial({ metalness: 0.4, roughness: 0.25, color: 0x88aaff, emissive: 0x001133 });
+      const mat = new THREE.MeshStandardMaterial({
+        metalness: 0.4,
+        roughness: 0.25,
+        color: 0x88aaff,
+        emissive: 0x001133
+      });
       subject = new THREE.Mesh(geo, mat);
       scene.add(subject);
       animate();

@@ -12,7 +12,7 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 
 // Сцена и камера
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0a0f1a);
+scene.background = new THREE.Color(0xff0000); // ярко-красный фон — как маяк
 
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
 camera.position.set(0, 0, 4);
@@ -22,20 +22,16 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
 // Свет
-scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+scene.add(new THREE.AmbientLight(0xffffff, 0.7));
 const dir = new THREE.DirectionalLight(0xffffff, 1);
 dir.position.set(3, 2, 4);
 scene.add(dir);
 
-// Шар по центру (маленький)
-const geometry = new THREE.SphereGeometry(1, 64, 64);
-const material = new THREE.MeshStandardMaterial({
-  color: 0x3b6cff,
-  roughness: 0.35,
-  metalness: 0.1
-});
-const sphere = new THREE.Mesh(geometry, material);
-scene.add(sphere);
+// ЖЁЛТЫЙ КУБ по центру (его точно видно)
+const geometry = new THREE.BoxGeometry(1, 1, 1);
+const material = new THREE.MeshStandardMaterial({ color: 0xffff00 });
+const cube = new THREE.Mesh(geometry, material);
+scene.add(cube);
 
 // Ресайз
 window.addEventListener('resize', () => {
@@ -47,7 +43,8 @@ window.addEventListener('resize', () => {
 // Анимация
 function animate() {
   requestAnimationFrame(animate);
-  sphere.rotation.y += 0.003;
+  cube.rotation.x += 0.01;
+  cube.rotation.y += 0.01;
   controls.update();
   renderer.render(scene, camera);
 }

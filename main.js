@@ -1,6 +1,8 @@
+// !!! Не меняй эти URL — это полные адреса модулей !!!
 import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 
+// Берём канвас
 const canvas = document.getElementById('c');
 
 // Рендерер
@@ -28,7 +30,7 @@ const dir = new THREE.DirectionalLight(0xffffff, 1);
 dir.position.set(3, 2, 4);
 scene.add(dir);
 
-// Шар — аккуратно по центру и не гигантский
+// Аккуратный шар по центру (не гигант)
 const geometry = new THREE.SphereGeometry(1, 64, 64);
 const material = new THREE.MeshStandardMaterial({
   color: 0x3b6cff, roughness: 0.35, metalness: 0.1
@@ -48,7 +50,7 @@ window.addEventListener('resize', onResize);
 // Анимация
 function animate() {
   requestAnimationFrame(animate);
-  sphere.rotation.y += 0.003;   // плавное вращение
+  sphere.rotation.y += 0.003; // плавное вращение
   controls.update();
   renderer.render(scene, camera);
 }
